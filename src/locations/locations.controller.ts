@@ -1,8 +1,10 @@
-import { Controller, Post, Body, Get, Param, Put, Delete } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param, Put, Delete, UseGuards } from '@nestjs/common';
 import { LocationsService } from './locations.service';
 import { Location } from './schema/location.schema';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @Controller('locations')
+@UseGuards(JwtAuthGuard)
 export class LocationsController {
   constructor(private readonly locationService: LocationsService) {}
 

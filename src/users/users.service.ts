@@ -1,52 +1,29 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { Model, PreMiddlewareFunction } from "mongoose";
-import { InjectModel } from "@nestjs/mongoose";
-//import { User } from "./interfaces/users.interfaces";
-import { User } from "./schemas/user.schema"; 
-//import { CreateuserDto } from "./dto/users.dto";
-
+import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { User } from './schemas/user.schema';
+import * as bcrypt from 'bcryptjs';
 
 @Injectable()
-export class UsersService {
-    constructor(@InjectModel(User.name) private userModel : Model<User>){}
-    
+export class UserService {
+  constructor(
+    @InjectModel('User') private readonly userModel: Model<User>,
+  ) {}
 
-    async getUsers() : Promise<User[]> {
-        return this.userModel.find().exec()  
-    }
 
-    async getUser(id: string): Promise<User> {
-        const user = await this.userModel.findById(id).exec();
-        if (!user) {
-          throw new NotFoundException(`Usuario no encontrado`);
-        }
-        return user;
-      }
+  async createUser(email: string, password: string): Promise<User> {
+    const salt = await bcrypt.genSalt();
+    const hashedPassword = await bcrypt.hash(password, salt);
 
-    
-    async createUser(email:string, password:string) : Promise<User>{
-        const newUser = new this.userModel({email,password});
-        return newUser.save()
-    }
+    const newUser = new this.userModel({ email, password: hashedPassword });
+    return newUser.save();
+  }
 
-    async updateUser(id: string, password: string): Promise<User> {
-        const user = await this.userModel.findByIdAndUpdate(
-          { id }, 
-          { password }, 
-          { new: true } 
-        ).exec()
-        if (!user) {
-            throw new NotFoundException(`Usuario no encontrado`);
-          }
-          return user;
-        }
+  async findUserByEmail(email: string): Promise<User | null> {
+    return this.userModel.findOne({ email }).exec();
+  }
 
-    async deleteUser(id: string): Promise<User> {
-        const user = await this.userModel.findByIdAndDelete(id).exec();
-            if (!user) {
-              throw new NotFoundException(`Usuario no encontrado`);
-            }
-            return user;
-          }
-
+  async validatePassword(user: User, password: string): Promise<boolean> {
+    return bcrypt.compare(password, user.password);
+  }
 }
