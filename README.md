@@ -1,98 +1,45 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+Se hace proyecto backend en Nest.js y coneccion mongoose para base de datos NoSQL mongoDb.
+Esta base de datos contiene  4 colecciones:
+- Users que admite datos como son email y password (password se guarda encriptado con hash para seguridad)
+- Trucks que admite datos user (id de user), year. color y plates.
+- Location que admite el deato de place_ID y convierte este dato a address, latitude y longitude.
+- Orders esta coleccion tiene datos de user (id del user), truck (id del truck), status (enum created, in transit o completed), pickup (id de location) y dropoff (id de location)
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+esta API esta compuesta de las siguientes rutas
+las unicas rutas que se pueden acceder sin un token, son /user/register y /auth/login
 
-## Description
+/users/register
+esta ruta es un POST con un body {"email" : email@email.com, "password": password1} cuando el usuario se registra se crea un nuevo user en la coleccion User
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+/auth/login
+esta ruta es un POST que busca el email de usuario, si lo encuentra el servido responde un Token con payload con informacion del email y contraseña del usuario
 
-## Project setup
+cabe destacar, que si el usuario no esta registrado o no tiene el token, las direcciones o colecciones Orders, Trucks y Location, estan protegidas con JwtAuthGuard
 
-```bash
-$ npm install
-```
+rutas protegidas son las siguientes por lo que se tiene que agregar un Auth en el header (token) para tener acceso :
+/trucks
+Es un metodo GET el cual devuelve un JSON con todos los trucks de la base de datos
+acepta un metodo POST para añadir un nevo truck a la coleccion Trucks
 
-## Compile and run the project
+/trucks/:id
+se añade el Id de un registro truck a la ruta, para actualizar el dato pasado, puede ser el year, color o plate o todos juntos
+tambien con esta estructura se puede borrar el truck del id pasado
 
-```bash
-# development
-$ npm run start
+/locations
+acepta un request POST para añadir un nuevo location pasando solo el place_id
+con GET se retornan todos los registros en la coleccion locations
 
-# watch mode
-$ npm run start:dev
+/locations/:id
+se añade el Id de un registro location a la rua, para actualizar el dato pasado
+tambien con esta estructura se puede borrar la location del id pasado
 
-# production mode
-$ npm run start:prod
-```
+/orders
+Es un metodo GET el cual devuelve un JSON con todos los orders de la base de datos
+acepta un metodo POST para añadir una nueva location a la coleccion location.
 
-## Run tests
+/orders/:id/status
+acepta un metodo Put para actualizar el status de la orden.
 
-```bash
-# unit tests
-$ npm run test
+concidere que no es necesario un archivo .env ya que lo lo desplegariamos a produccion, solo es un archivo de prueba.
 
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
-```
-
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
